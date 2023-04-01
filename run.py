@@ -3,7 +3,7 @@ from kivy.config import Config
 
 
 def check_platform() -> None:
-    if platform.system().lower() in ("linux", "macosx", "windows"):
+    if platform.lower() in ("linux", "macosx", "windows"):
         Config.set("graphics", "resizable", False)
         Config.set("graphics", "width", "1000")
         Config.set("graphics", "height", "800")

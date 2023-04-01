@@ -19,9 +19,6 @@ class Game(Widget):
             widget.size = root.size
             widget.resize()
 
-    def set_root(self, root) -> None:
-        self._pong_game.root = root
-
     def show_menu(self) -> None:
         try:
             self.add_widget(self._menu)
@@ -52,7 +49,6 @@ class PongApp(App):
         return self.game
 
     def on_start(self) -> None:
-        self.game.set_root(self.root)
         self.root.bind(size=self.game.resize)
         self.game.resize(self.root, None)
         self.game.show_menu()

@@ -15,7 +15,7 @@ from pong.player import AIPlayer, Player, Side, SimpleAIPlayer
 
 class PongGame(Widget):
 
-    BACKGROUND_COLOR: Tuple[float, float, float, float] = (73 / 255, 77 / 255, 95 / 255, 1)
+    BACKGROUND_COLOR: Tuple[float, float, float, float] = (53 / 255, 56 / 255, 57 / 255, 1)
     FONT_SIZE: int = 70
     ENEMY_COLOR: Tuple[float, float, float, float] = (160 / 255, 210 / 255, 235 / 255, 1)
     TIMEOUT: float = 1 / 60
@@ -23,7 +23,6 @@ class PongGame(Widget):
 
     def __init__(self) -> None:
         super().__init__()
-        self.root = None
         self._ball: Ball = Ball()
         self._path_to_sound: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "media",
                                                 "impact_on_ground.wav")
@@ -36,11 +35,13 @@ class PongGame(Widget):
         self._label_2.font_size = PongGame.FONT_SIZE
 
         with self.canvas:
+            Color(*PongGame.BACKGROUND_COLOR)
+            self._background: Rectangle = Rectangle(pos=self.pos, size=self.size)
             Color(1, 1, 1, 1)
             self._net: Rectangle = Rectangle(pos=[self.center_x - 5, 0], size=[10, self.height])
 
     def _init_ball(self) -> None:
-        width, height = self.root.size
+        width, height = self.size
         self._ball.max_velocity = math.pow(width ** 2 + height ** 2, 0.5) * PongGame.TIMEOUT
         self._ball.init_velocity = self._ball.max_velocity / 5
 
@@ -58,15 +59,6 @@ class PongGame(Widget):
     def on_touch_move(self, touch) -> None:
         for player in (self._player_1, self._player_2):
             player.change_position_by_touch(touch.x, touch.y)
-
-    def replace_widgets(self, root, _) -> None:
-        self._label_1.center_x = root.width / 4
-        self._label_1.top = root.top - 50
-        self._label_2.center_x = 3 * root.width / 4
-        self._label_2.top = root.top - 50
-
-        self._menu.pos = self.root.pos
-        self._menu.size = self.root.size
 
     def resize(self) -> None:
         pass
@@ -86,21 +78,23 @@ class PongGame(Widget):
         self.start_round()
 
     def start_round(self) -> None:
-        self._ball.center = self.root.center
+        self._ball.center = self.center
         self._ball.velocity = Vector(self._ball.init_velocity, 0).rotate(randint(0, 360))
 
-        self._player_1.x = self.root.x
-        self._player_1.center_y = self.root.center_y
-        self._player_2.x = self.root.width - self._player_2.width
-        self._player_2.center_y = self.root.center_y
+        self._player_1.x = self.x
+        self._player_1.center_y = self.center_y
+        self._player_2.x = self.width - self._player_2.width
+        self._player_2.center_y = self.center_y
 
-        self._net.pos = [self.root.center_x - 5, 0]
-        self._net.size = [10, self.root.height]
+        self._background.pos = self.pos
+        self._background.size = self.size
+        self._net.pos = [self.center_x - 5, 0]
+        self._net.size = [10, self.height]
 
-        self._label_1.center_x = self.root.width / 4
-        self._label_1.top = self.root.top - 50
-        self._label_2.center_x = 3 * self.root.width / 4
-        self._label_2.top = self.root.top - 50
+        self._label_1.center_x = self.width / 4
+        self._label_1.top = self.top - 50
+        self._label_2.center_x = 3 * self.width / 4
+        self._label_2.top = self.top - 50
 
         if self._label_1.parent is None:
             self.add_widget(self._ball)
