@@ -1,5 +1,7 @@
+import os
 from enum import auto, Enum
 from typing import Tuple
+from kivy.core.audio import SoundLoader
 from kivy.graphics import Color, Rectangle
 from kivy.properties import NumericProperty
 from kivy.uix.widget import Widget
@@ -14,17 +16,21 @@ class Side(Enum):
 
 class Player(Widget):
 
+    HIT_COLOR: Tuple[float, float, float, float] = (247 / 255, 89 / 255, 144 / 255, 1)
     INCREMENT_COEFFICIENT: float = 1.01
     score: NumericProperty = NumericProperty(-1)
 
     def __init__(self, rgb_color: Tuple[float, float, float, float], side: Side) -> None:
         super().__init__()
+        self._color: Tuple[float, float, float, float] = rgb_color
+        self._hit_was: int = 0
+        self._path_to_sound: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "media",
+                                                "hard_ball_hit.wav")
+        self._sound: SoundLoader = SoundLoader.load(self._path_to_sound)
         self._side: Side = side
         self.size = [25, 200]
-        with self.canvas:
-            Color(*rgb_color)
-            self._rect: Rectangle = Rectangle(pos=self.pos, size=self.size)
         self.bind(pos=self.move_racket)
+        self._draw()
 
     def _change_position(self, new_y: float) -> None:
         if self.height / 2 < new_y < self.parent.height - self.height / 2:
@@ -33,6 +39,14 @@ class Player(Widget):
             self.center_y = self.height / 2
         elif new_y >= self.parent.height - self.height / 2:
             self.center_y = self.parent.height - self.height / 2
+
+    def _draw(self, color: Tuple[float, float, float, float] = None) -> None:
+        if color is None:
+            color = self._color
+        self.canvas.clear()
+        with self.canvas:
+            Color(*color)
+            self._rect: Rectangle = Rectangle(pos=self.pos, size=self.size)
 
     def change_position(self, ball: Ball) -> None:
         pass
@@ -48,13 +62,24 @@ class Player(Widget):
         :param ball: ball.
         """
 
+        if self._hit_was >= 1:
+            self._hit_was += 1
+        if self._hit_was > 5:
+            self._draw()
+            self._hit_was = 0
         if self.collide_widget(ball):
+            if self._sound:
+                self._sound.play()
+            new_velocity = self.INCREMENT_COEFFICIENT * ball.velocity_module
+            coefficient = self.INCREMENT_COEFFICIENT if ball.check_velocity_increasing(new_velocity) else 1
             velocity_x, velocity_y = ball.velocity
-            ball.velocity = self.INCREMENT_COEFFICIENT * Vector(-1 * velocity_x, velocity_y)
+            ball.velocity = coefficient * Vector(-1 * velocity_x, velocity_y)
             if self._side == Side.LEFT:
                 ball.center_x = self.right + ball.width / 2
             elif self._side == Side.RIGHT:
                 ball.center_x = self.x - ball.width / 2
+            self._draw(Player.HIT_COLOR)
+            self._hit_was = 1
 
     def move_racket(self, obj, pos) -> None:
         self._rect.pos = pos

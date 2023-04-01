@@ -1,6 +1,9 @@
+import math
+import os
 from random import randint
 from typing import Tuple
 from kivy.clock import Clock
+from kivy.core.audio import SoundLoader
 from kivy.graphics import Color, Rectangle
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
@@ -15,12 +18,16 @@ class PongGame(Widget):
     BACKGROUND_COLOR: Tuple[float, float, float, float] = (73 / 255, 77 / 255, 95 / 255, 1)
     FONT_SIZE: int = 70
     ENEMY_COLOR: Tuple[float, float, float, float] = (160 / 255, 210 / 255, 235 / 255, 1)
+    TIMEOUT: float = 1 / 60
     USER_COLOR: Tuple[float, float, float, float] = (229 / 255, 234 / 255, 245 / 255, 1)
 
     def __init__(self) -> None:
         super().__init__()
         self.root = None
         self._ball: Ball = Ball()
+        self._path_to_sound: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "media",
+                                                "impact_on_ground.wav")
+        self._sound: SoundLoader = SoundLoader.load(self._path_to_sound)
         self._player_1: Player = None
         self._player_2: Player = None
         self._label_1: Label = Label()
@@ -31,6 +38,11 @@ class PongGame(Widget):
         with self.canvas:
             Color(1, 1, 1, 1)
             self._net: Rectangle = Rectangle(pos=[self.center_x - 5, 0], size=[10, self.height])
+
+    def _init_ball(self) -> None:
+        width, height = self.root.size
+        self._ball.max_velocity = math.pow(width ** 2 + height ** 2, 0.5) * PongGame.TIMEOUT
+        self._ball.init_velocity = self._ball.max_velocity / 5
 
     def _init_players(self, game_type: GameType) -> None:
         self._player_1 = Player(PongGame.USER_COLOR, Side.LEFT)
@@ -66,21 +78,16 @@ class PongGame(Widget):
             self._label_2.text = str(score)
 
     def start_game(self, game_type: GameType) -> None:
+        self._init_ball()
         self._init_players(game_type)
         self._player_1.score = 0
         self._player_2.score = 0
-        self._schedule_event = Clock.schedule_interval(self.update, 1 / 60)
+        self._schedule_event = Clock.schedule_interval(self.update, PongGame.TIMEOUT)
         self.start_round()
 
-    def start_round(self, velocity: float = 4) -> None:
-        """
-        :param velocity: initial ball velocity.
-        """
-
-        self._ball.initial_velocity = velocity
+    def start_round(self) -> None:
         self._ball.center = self.root.center
-        self._ball.velocity = Vector(velocity, 0).rotate(randint(0, 360))
-        self._ball.velocity = Vector(velocity, 0)
+        self._ball.velocity = Vector(self._ball.init_velocity, 0).rotate(randint(0, 360))
 
         self._player_1.x = self.root.x
         self._player_1.center_y = self.root.center_y
@@ -112,6 +119,7 @@ class PongGame(Widget):
 
         if self._ball.y < 0 or self._ball.top > self.height:
             # Ball rebound from the horizontal borders of the field
+            self._sound.play()
             self._ball.velocity_y *= -1
 
         new_round = False
