@@ -19,11 +19,13 @@ class PongGame(Widget):
     BACKGROUND_COLOR: Tuple[float, float, float, float] = (53 / 255, 56 / 255, 57 / 255, 1)
     FONT_SIZE: int = 70
     ENEMY_COLOR: Tuple[float, float, float, float] = (160 / 255, 210 / 255, 235 / 255, 1)
+    MAX_SCORE: int = 5
     TIMEOUT: float = 1 / 60
     USER_COLOR: Tuple[float, float, float, float] = (229 / 255, 234 / 255, 245 / 255, 1)
 
-    def __init__(self) -> None:
+    def __init__(self, main_widget) -> None:
         super().__init__()
+        self._main_widget = main_widget
         self._ball: Ball = Ball()
         self._path_to_sound: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "media",
                                                 "impact_on_ground.wav")
@@ -36,6 +38,7 @@ class PongGame(Widget):
         self._label_2: Label = Label()
         self._label_2.font_size = PongGame.FONT_SIZE
         self._headband: Headband = Headband()
+        self._headband.bind(return_to_menu=self.stop_game)
         self._headband.bind(start_round=self.start_round)
 
         with self.canvas:
@@ -44,12 +47,18 @@ class PongGame(Widget):
             Color(1, 1, 1, 1)
             self._net: Rectangle = Rectangle(pos=[self.center_x - 5, 0], size=[10, self.height])
 
+    def _continue_game(self) -> bool:
+        return self._player_1.score < PongGame.MAX_SCORE and self._player_2.score < PongGame.MAX_SCORE
+
     def _init_ball(self) -> None:
         width, height = self.size
         self._ball.max_velocity = math.pow(width ** 2 + height ** 2, 0.5) * PongGame.TIMEOUT
         self._ball.init_velocity = self._ball.max_velocity / 5
 
     def _init_players(self, game_type: GameType) -> None:
+        for player in (self._player_1, self._player_2):
+            if player and player.parent:
+                self.remove_widget(player)
         self._player_1 = Player(PongGame.USER_COLOR, Side.LEFT)
         self._player_1.bind(score=self.set_score)
         if game_type == GameType.AI:
@@ -59,24 +68,6 @@ class PongGame(Widget):
         elif game_type == GameType.WITH_FRIEND:
             self._player_2 = Player(PongGame.ENEMY_COLOR, Side.RIGHT)
         self._player_2.bind(score=self.set_score)
-
-    def on_touch_move(self, touch) -> None:
-        for player in (self._player_1, self._player_2):
-            player.change_position_by_touch(touch.x, touch.y)
-
-    def set_score(self, player: Player, score: int) -> None:
-        if player == self._player_1:
-            self._label_1.text = str(score)
-        elif player == self._player_2:
-            self._label_2.text = str(score)
-
-    def start_game(self, game_type: GameType) -> None:
-        self._init_ball()
-        self._init_players(game_type)
-        self._player_1.score = 0
-        self._player_2.score = 0
-
-        self._init_round()
 
     def _init_round(self) -> None:
         if self._schedule_event:
@@ -108,10 +99,39 @@ class PongGame(Widget):
 
         self._headband.start_countdown()
 
+    def _show_game_end(self) -> None:
+        if self._schedule_event:
+            self._schedule_event.cancel()
+        if self._headband.parent is None:
+            self.add_widget(self._headband)
+        self._headband.show_congratulations(self._player_1.score >= PongGame.MAX_SCORE)
+
+    def on_touch_move(self, touch) -> None:
+        for player in (self._player_1, self._player_2):
+            player.change_position_by_touch(touch.x, touch.y)
+
+    def set_score(self, player: Player, score: int) -> None:
+        if player == self._player_1:
+            self._label_1.text = str(score)
+        elif player == self._player_2:
+            self._label_2.text = str(score)
+
+    def start_game(self, game_type: GameType) -> None:
+        self._init_ball()
+        self._init_players(game_type)
+        self._player_1.score = 0
+        self._player_2.score = 0
+
+        self._init_round()
+
     def start_round(self, headband, start_round) -> None:
         if start_round:
             self._schedule_event = Clock.schedule_interval(self.update, PongGame.TIMEOUT)
             self.remove_widget(self._headband)
+
+    def stop_game(self, headband, return_to_menu) -> None:
+        if return_to_menu:
+            self._main_widget.show_menu()
 
     def update(self, dt) -> None:
         for player in (self._player_1, self._player_2):
@@ -136,4 +156,7 @@ class PongGame(Widget):
             self._player_1.score += 1
             new_round = True
         if new_round:
-            self._init_round()
+            if self._continue_game():
+                self._init_round()
+            else:
+                self._show_game_end()

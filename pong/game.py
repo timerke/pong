@@ -11,7 +11,7 @@ class Game(Widget):
         super().__init__()
         self._menu: Menu = Menu()
         self._menu.bind(game_type=self.start_game)
-        self._pong_game: PongGame = PongGame()
+        self._pong_game: PongGame = PongGame(self)
 
     def resize(self, root, _) -> None:
         for widget in (self._pong_game, self._menu):
