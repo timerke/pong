@@ -1,2 +1,2 @@
 cd ..
-venv/bin/python run.py
+venv/bin/python main.py
