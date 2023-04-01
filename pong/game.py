@@ -17,7 +17,9 @@ class Game(Widget):
         for widget in (self._pong_game, self._menu):
             widget.pos = root.pos
             widget.size = root.size
-            widget.resize()
+            resize_func = getattr(widget, "resize", None)
+            if resize_func:
+                resize_func()
 
     def show_menu(self) -> None:
         try:

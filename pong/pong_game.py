@@ -60,9 +60,6 @@ class PongGame(Widget):
         for player in (self._player_1, self._player_2):
             player.change_position_by_touch(touch.x, touch.y)
 
-    def resize(self) -> None:
-        pass
-
     def set_score(self, player: Player, score: int) -> None:
         if player == self._player_1:
             self._label_1.text = str(score)
