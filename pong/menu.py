@@ -29,12 +29,12 @@ class Menu(FloatLayout):
 
     def __init__(self) -> None:
         super().__init__()
-        self._button_play_with_friend: Button = Button(text="Играть с другом",
+        self._button_play_with_friend: Button = Button(text="Play with friend",
                                                        pos_hint={"center_x": 0.5, "center_y": 0.8})
-        self._button_play_with_simple_ai: Button = Button(text="Играть с ИИ (простой уровень)",
+        self._button_play_with_simple_ai: Button = Button(text="Play with AI (easy)",
                                                           pos_hint={"center_x": 0.5, "center_y": 0.6})
-        self._button_play_with_ai: Button = Button(text="Играть с ИИ", pos_hint={"center_x": 0.5, "center_y": 0.4})
-        self._button_exit: Button = Button(text="Выход", pos_hint={"center_x": 0.5, "center_y": 0.2})
+        self._button_play_with_ai: Button = Button(text="Play with AI", pos_hint={"center_x": 0.5, "center_y": 0.4})
+        self._button_exit: Button = Button(text="Exit", pos_hint={"center_x": 0.5, "center_y": 0.2})
         self._buttons: List[Button] = [self._button_play_with_friend, self._button_play_with_simple_ai,
                                        self._button_play_with_ai, self._button_exit]
         for widget in self._buttons:

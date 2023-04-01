@@ -9,6 +9,7 @@ from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.vector import Vector
 from pong.ball import Ball
+from pong.headband import Headband
 from pong.menu import GameType
 from pong.player import AIPlayer, Player, Side, SimpleAIPlayer
 
@@ -27,12 +28,15 @@ class PongGame(Widget):
         self._path_to_sound: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "media",
                                                 "impact_on_ground.wav")
         self._sound: SoundLoader = SoundLoader.load(self._path_to_sound)
+        self._schedule_event = None
         self._player_1: Player = None
         self._player_2: Player = None
         self._label_1: Label = Label()
         self._label_1.font_size = PongGame.FONT_SIZE
         self._label_2: Label = Label()
         self._label_2.font_size = PongGame.FONT_SIZE
+        self._headband: Headband = Headband()
+        self._headband.bind(start_round=self.start_round)
 
         with self.canvas:
             Color(*PongGame.BACKGROUND_COLOR)
@@ -71,10 +75,12 @@ class PongGame(Widget):
         self._init_players(game_type)
         self._player_1.score = 0
         self._player_2.score = 0
-        self._schedule_event = Clock.schedule_interval(self.update, PongGame.TIMEOUT)
-        self.start_round()
 
-    def start_round(self) -> None:
+        self._init_round()
+
+    def _init_round(self) -> None:
+        if self._schedule_event:
+            self._schedule_event.cancel()
         self._ball.center = self.center
         self._ball.velocity = Vector(self._ball.init_velocity, 0).rotate(randint(0, 360))
 
@@ -93,12 +99,19 @@ class PongGame(Widget):
         self._label_2.center_x = 3 * self.width / 4
         self._label_2.top = self.top - 50
 
-        if self._label_1.parent is None:
-            self.add_widget(self._ball)
-            self.add_widget(self._player_1)
-            self.add_widget(self._player_2)
-            self.add_widget(self._label_1)
-            self.add_widget(self._label_2)
+        self._headband.center_x = self.center_x
+        self._headband.center_y = self.center_y
+
+        for widget in (self._ball, self._player_1, self._player_2, self._label_1, self._label_2, self._headband):
+            if widget.parent is None:
+                self.add_widget(widget)
+
+        self._headband.start_countdown()
+
+    def start_round(self, headband, start_round) -> None:
+        if start_round:
+            self._schedule_event = Clock.schedule_interval(self.update, PongGame.TIMEOUT)
+            self.remove_widget(self._headband)
 
     def update(self, dt) -> None:
         for player in (self._player_1, self._player_2):
@@ -123,4 +136,4 @@ class PongGame(Widget):
             self._player_1.score += 1
             new_round = True
         if new_round:
-            self.start_round()
+            self._init_round()
