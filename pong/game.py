@@ -17,9 +17,10 @@ class Game(Widget):
         for widget in (self._pong_game, self._menu):
             widget.pos = root.pos
             widget.size = root.size
+            widget.resize()
 
     def set_root(self, root) -> None:
-        self._pong_game.set_root(root)
+        self._pong_game.root = root
 
     def show_menu(self) -> None:
         try:

@@ -1,5 +1,5 @@
 from enum import auto, Enum
-from typing import List
+from typing import Tuple
 from kivy.graphics import Color, Rectangle
 from kivy.properties import NumericProperty
 from kivy.uix.widget import Widget
@@ -17,7 +17,7 @@ class Player(Widget):
     INCREMENT_COEFFICIENT: float = 1.01
     score: NumericProperty = NumericProperty(-1)
 
-    def __init__(self, rgb_color: List[float], side: Side) -> None:
+    def __init__(self, rgb_color: Tuple[float, float, float, float], side: Side) -> None:
         super().__init__()
         self._side: Side = side
         self.size = [25, 200]
@@ -64,7 +64,7 @@ class SimpleAIPlayer(Player):
 
     VELOCITY: float = 4
 
-    def __init__(self, rgb_color: List[float], side: Side) -> None:
+    def __init__(self, rgb_color: Tuple[float, float, float, float], side: Side) -> None:
         super().__init__(rgb_color, side)
         self._player_velocity: float = SimpleAIPlayer.VELOCITY
 
@@ -82,7 +82,7 @@ class AIPlayer(Player):
 
     VELOCITY: float = 4
 
-    def __init__(self, rgb_color: List[float], side: Side) -> None:
+    def __init__(self, rgb_color: Tuple[float, float, float, float], side: Side) -> None:
         super().__init__(rgb_color, side)
         self._player_velocity: float = SimpleAIPlayer.VELOCITY
 
@@ -102,7 +102,6 @@ class AIPlayer(Player):
             y_required = self.parent.height - y_shift
         else:
             y_required = y_shift
-        print(self.center_y, y_required)
         if y_required > self.center_y + self.height / 2:
             y_new = self.center_y + self._player_velocity
             self._change_position(y_new)
