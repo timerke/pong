@@ -19,12 +19,20 @@ a = Analysis(['main.py'],
              noarchive=False)
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
+splash = Splash('media\\icon.png',
+                binaries=a.binaries,
+                datas=a.datas,
+                text_pos=None,
+                text_size=12,
+                minify_script=True)
 
 exe = EXE(pyz,
           a.scripts,
           a.binaries,
           a.zipfiles,
-          a.datas,  
+          a.datas, 
+          splash, 
+          splash.binaries,
           *[Tree(p) for p in (sdl2.dep_bins + glew.dep_bins)],
           name='pong',
           debug=False,
@@ -38,5 +46,4 @@ exe = EXE(pyz,
           target_arch=None,
           codesign_identity=None,
           entitlements_file=None ,
-		  icon='media\\icon.ico',
-		  splash='media\\icon.png')
+		  icon='media\\icon.ico')
