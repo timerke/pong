@@ -6,6 +6,8 @@ from kivy.graphics import Color, Rectangle
 from kivy.properties import Property
 from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.label import Label
+from version import VERSION
 
 
 class GameType(Enum):
@@ -24,17 +26,17 @@ class Menu(FloatLayout):
     BUTTON_COLOR: Tuple[float, float, float, float] = (132 / 255, 88 / 255, 179 / 255, 1)
     BUTTON_COLOR_ON_HOVER: Tuple[float, float, float, float] = (160 / 255, 210 / 255, 235 / 255, 1)
     FONT_SIZE: int = 35
-    SIZE_HINT: Tuple[float, float] = (0.7, 0.2)
+    SIZE_HINT: Tuple[float, float] = (0.7, 0.16)
     game_type = Property(GameType.NOTHING)
 
     def __init__(self) -> None:
         super().__init__()
         self._button_play_with_friend: Button = Button(text="Play with friend",
-                                                       pos_hint={"center_x": 0.5, "center_y": 0.8})
+                                                       pos_hint={"center_x": 0.5, "center_y": 0.81})
         self._button_play_with_simple_ai: Button = Button(text="Play with AI (easy)",
                                                           pos_hint={"center_x": 0.5, "center_y": 0.6})
-        self._button_play_with_ai: Button = Button(text="Play with AI", pos_hint={"center_x": 0.5, "center_y": 0.4})
-        self._button_exit: Button = Button(text="Exit", pos_hint={"center_x": 0.5, "center_y": 0.2})
+        self._button_play_with_ai: Button = Button(text="Play with AI", pos_hint={"center_x": 0.5, "center_y": 0.39})
+        self._button_exit: Button = Button(text="Exit", pos_hint={"center_x": 0.5, "center_y": 0.18})
         self._buttons: List[Button] = [self._button_play_with_friend, self._button_play_with_simple_ai,
                                        self._button_play_with_ai, self._button_exit]
         for widget in self._buttons:
@@ -45,6 +47,9 @@ class Menu(FloatLayout):
         self._button_play_with_ai.bind(on_press=self.start_ai_game)
         self._button_play_with_friend.bind(on_press=self.start_game_with_friend)
         self._button_play_with_simple_ai.bind(on_press=self.start_simple_ai_game)
+
+        self._label_version: Label = Label(text=VERSION, pos_hint={"center_x": 0.5, "center_y": 0.05})
+        self._widgets: List = [*self._buttons, self._label_version]
         self.resize()
         Window.bind(mouse_pos=self._handle_mouse_hover)
 
@@ -66,7 +71,7 @@ class Menu(FloatLayout):
         with self.canvas:
             Color(*Menu.BACKGROUND_COLOR)
             Rectangle(pos=self.pos, size=self.size)
-        for widget in self._buttons:
+        for widget in self._widgets:
             try:
                 self.remove_widget(widget)
             except Exception:

@@ -2,7 +2,7 @@ import os
 from kivy.app import App
 from kivy.uix.widget import Widget
 from pong.pong_game import PongGame
-from pong.menu import Menu, GameType
+from pong.menu import GameType, Menu
 
 
 class Game(Widget):
@@ -45,8 +45,9 @@ class Game(Widget):
 
 class PongApp(App):
 
+    icon = os.path.join(os.getcwd(), "media", "icon.png")
+
     def build(self) -> Game:
-        self.icon = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "media", "pong.png")
         self.game = Game()
         return self.game
 
