@@ -1,23 +1,48 @@
 # pong
 Игра **pong**, написанная на Python c использованием kivy.
 
-## Запуск в Windows
+## Запуск
 
-1. Перейдите в папку **scripts** и выполните скрипт **install.bat**
-2. Из той же папке **scripts** выполните скрипт **run.bat**.
+1. Перейдите в папку **scripts** и выполните скрипт:
 
-## Запуск в Linux
+   - **install.bat**, если вы работаете в *Windows*;
 
-1. Перейдите в папку **scripts** и выполните скрипт **install.sh**:
+   - **install.sh**, если вы работаете в *Linux*:
 
-   ```bash
-   bash install.sh
-   ```
+     ```bash
+     bash install.sh
+     ```
 
-2. Из той же папки **scripts** выполните скрипт **run.sh**:
+2. Из той же папке **scripts** выполните скрипт:
 
-   ```bash
-   bash run.sh
-   ```
+   - **run.bat**, если вы работаете в *Windows*;
+
+   - **run.sh**, если вы работаете в *Linux*:
+
+     ```bash
+     bash run.sh
+     ```
+
+## Выпуск релиза
+
+1. Перейдите в папку **scripts** и выполните скрипт:
+
+   - **install.bat**, если вы работаете в *Windows*;
+
+   - **install.sh**, если вы работаете в *Linux*:
+
+     ```bash
+     bash install.sh
+     ```
+
+2. Из той же папки **scripts** выполните скрипт:
+
+   - **run.bat**, если вы работаете в *Windows*;
+
+   - **run.sh**, если вы работаете в *Linux*:
+
+     ```bash
+     bash run.sh
+     ```
 
    

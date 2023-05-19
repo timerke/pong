@@ -1,5 +1,8 @@
-from kivy.utils import platform
+import os
+import sys
 from kivy.config import Config
+from kivy.resources import resource_add_path
+from kivy.utils import platform
 
 
 def check_platform() -> None:
@@ -11,6 +14,8 @@ def check_platform() -> None:
 
 
 if __name__ == "__main__":
+    if hasattr(sys, "_MEIPASS"):
+        resource_add_path(os.path.join(sys._MEIPASS))
     check_platform()
 
     from pong.game import PongApp
