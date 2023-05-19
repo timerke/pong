@@ -21,11 +21,15 @@ class Player(Widget):
     score: NumericProperty = NumericProperty(-1)
 
     def __init__(self, rgb_color: Tuple[float, float, float, float], side: Side) -> None:
+        """
+        :param rgb_color: color for player;
+        :param side: side for player.
+        """
+
         super().__init__()
         self._color: Tuple[float, float, float, float] = rgb_color
         self._hit_was: int = 0
-        self._path_to_sound: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "media",
-                                                "hard_ball_hit.wav")
+        self._path_to_sound: str = os.path.join("media", "hard_ball_hit.wav")
         self._sound: SoundLoader = SoundLoader.load(self._path_to_sound)
         self._side: Side = side
         self.size = [25, 200]
@@ -33,6 +37,10 @@ class Player(Widget):
         self._draw()
 
     def _change_position(self, new_y: float) -> None:
+        """
+        :param new_y: new vertical position for player.
+        """
+
         if self.height / 2 < new_y < self.parent.height - self.height / 2:
             self.center_y = new_y
         elif new_y <= self.height / 2:
@@ -41,6 +49,10 @@ class Player(Widget):
             self.center_y = self.parent.height - self.height / 2
 
     def _draw(self, color: Tuple[float, float, float, float] = None) -> None:
+        """
+        :param color: new color for player.
+        """
+
         if color is None:
             color = self._color
         self.canvas.clear()
@@ -49,9 +61,20 @@ class Player(Widget):
             self._rect: Rectangle = Rectangle(pos=self.pos, size=self.size)
 
     def change_position(self, ball: Ball) -> None:
+        """
+        Method changes position of player widget according to ball characteristics.
+        :param ball: ball.
+        """
+
         pass
 
     def change_position_by_touch(self, touch_x: float, touch_y: float) -> None:
+        """
+        Method changes position of player widget by coordinated of touch.
+        :param touch_x: horizontal coordinate;
+        :param touch_y: vertical coordinate.
+        """
+
         if (self._side == Side.LEFT and touch_x < self.parent.width / 3) or \
                 (self._side == Side.RIGHT and touch_x > 2 * self.parent.width / 3):
             self._change_position(touch_y)
@@ -82,6 +105,12 @@ class Player(Widget):
             self._hit_was = 1
 
     def move_racket(self, obj, pos) -> None:
+        """
+        Method moves racket of player on window.
+        :param obj:
+        :param pos: position to place racket.
+        """
+
         self._rect.pos = pos
 
 
@@ -90,28 +119,56 @@ class SimpleAIPlayer(Player):
     VELOCITY: float = 4
 
     def __init__(self, rgb_color: Tuple[float, float, float, float], side: Side) -> None:
+        """
+        :param rgb_color: color for player;
+        :param side: side for player.
+        """
+
         super().__init__(rgb_color, side)
         self._player_velocity: float = SimpleAIPlayer.VELOCITY
 
     def change_position(self, ball: Ball) -> None:
+        """
+        Method changes position of player widget according to ball characteristics.
+        :param ball: ball.
+        """
+
         new_y = self.center_y + self._player_velocity
         if new_y <= self.height / 2 or new_y >= self.parent.height - self.height / 2:
             self._player_velocity *= -1
         self._change_position(new_y)
 
     def change_position_by_touch(self, touch_x: float, touch_y: float) -> None:
+        """
+        Method changes position of player widget by coordinated of touch.
+        :param touch_x: horizontal coordinate;
+        :param touch_y: vertical coordinate.
+        """
+
         pass
 
 
 class AIPlayer(Player):
 
+    MAX_VELOCITY: float = 15
+    MIN_VELOCITY: float = 1
     VELOCITY: float = 4
 
     def __init__(self, rgb_color: Tuple[float, float, float, float], side: Side) -> None:
+        """
+        :param rgb_color: color for player;
+        :param side: side for player.
+        """
+
         super().__init__(rgb_color, side)
-        self._player_velocity: float = SimpleAIPlayer.VELOCITY
+        self._player_velocity: float = AIPlayer.VELOCITY
 
     def change_position(self, ball: Ball) -> None:
+        """
+        Method changes position of player widget according to ball characteristics.
+        :param ball: ball.
+        """
+
         time = 0
         if ball.velocity_x < 0:
             time += 2 * (ball.center_x - self.width) / abs(ball.velocity_x)
@@ -127,6 +184,13 @@ class AIPlayer(Player):
             y_required = self.parent.height - y_shift
         else:
             y_required = y_shift
+
+        if time != 0:
+            required_velocity = abs(y_required - self.center_y) / time
+            required_velocity = min(required_velocity, AIPlayer.MAX_VELOCITY)
+            required_velocity = max(required_velocity, AIPlayer.MIN_VELOCITY)
+            self._player_velocity = required_velocity
+
         if y_required > self.center_y + self.height / 2:
             y_new = self.center_y + self._player_velocity
             self._change_position(y_new)
@@ -135,4 +199,10 @@ class AIPlayer(Player):
             self._change_position(y_new)
 
     def change_position_by_touch(self, touch_x: float, touch_y: float) -> None:
+        """
+        Method changes position of player widget by coordinated of touch.
+        :param touch_x: horizontal coordinate;
+        :param touch_y: vertical coordinate.
+        """
+
         pass

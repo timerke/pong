@@ -2,6 +2,7 @@ import math
 import os
 from random import randint
 from typing import Tuple
+import numpy as np
 from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
 from kivy.graphics import Color, Rectangle
@@ -15,6 +16,9 @@ from pong.player import AIPlayer, Player, Side, SimpleAIPlayer
 
 
 class PongGame(Widget):
+    """
+    Class is responsible for the logic of the game.
+    """
 
     BACKGROUND_COLOR: Tuple[float, float, float, float] = (53 / 255, 56 / 255, 57 / 255, 1)
     FONT_SIZE: int = 70
@@ -24,11 +28,14 @@ class PongGame(Widget):
     USER_COLOR: Tuple[float, float, float, float] = (229 / 255, 234 / 255, 245 / 255, 1)
 
     def __init__(self, main_widget) -> None:
+        """
+        :param main_widget: main widget of application.
+        """
+
         super().__init__()
         self._main_widget = main_widget
         self._ball: Ball = Ball()
-        self._path_to_sound: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "media",
-                                                "impact_on_ground.wav")
+        self._path_to_sound: str = os.path.join("media", "impact_on_ground.wav")
         self._sound: SoundLoader = SoundLoader.load(self._path_to_sound)
         self._schedule_event = None
         self._player_1: Player = None
@@ -48,7 +55,20 @@ class PongGame(Widget):
             self._net: Rectangle = Rectangle(pos=[self.center_x - 5, 0], size=[10, self.height])
 
     def _continue_game(self) -> bool:
+        """
+        :return: True if game should continue.
+        """
+
         return self._player_1.score < PongGame.MAX_SCORE and self._player_2.score < PongGame.MAX_SCORE
+
+    def _generate_random_velocity(self) -> Vector:
+        """
+        :return: velocity vector with a randomly chosen direction. The direction of velocity is normally distributed.
+        """
+
+        direction = 0 if randint(0, 1) == 0 else 180
+        angle = np.random.normal(direction, 180 / 5, 1)[0]
+        return Vector(self._ball.init_velocity, 0).rotate(angle)
 
     def _init_ball(self) -> None:
         width, height = self.size
@@ -56,6 +76,10 @@ class PongGame(Widget):
         self._ball.init_velocity = self._ball.max_velocity / 5
 
     def _init_players(self, game_type: GameType) -> None:
+        """
+        :param game_type: type of game for which players should be created.
+        """
+
         for player in (self._player_1, self._player_2):
             if player and player.parent:
                 self.remove_widget(player)
@@ -73,7 +97,7 @@ class PongGame(Widget):
         if self._schedule_event:
             self._schedule_event.cancel()
         self._ball.center = self.center
-        self._ball.velocity = Vector(self._ball.init_velocity, 0).rotate(randint(0, 360))
+        self._ball.velocity = self._generate_random_velocity()
 
         self._player_1.x = self.x
         self._player_1.center_y = self.center_y
@@ -111,12 +135,21 @@ class PongGame(Widget):
             player.change_position_by_touch(touch.x, touch.y)
 
     def set_score(self, player: Player, score: int) -> None:
+        """
+        :param player: player to set score for;
+        :param score: score for player.
+        """
+
         if player == self._player_1:
             self._label_1.text = str(score)
         elif player == self._player_2:
             self._label_2.text = str(score)
 
     def start_game(self, game_type: GameType) -> None:
+        """
+        :param game_type: type of game to start.
+        """
+
         self._init_ball()
         self._init_players(game_type)
         self._player_1.score = 0

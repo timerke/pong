@@ -35,6 +35,11 @@ class Game(Widget):
             pass
 
     def start_game(self, menu: Menu, game_type: GameType) -> None:
+        """
+        :param menu: menu widget;
+        :param game_type: type of game to start.
+        """
+
         try:
             self.add_widget(self._pong_game)
         except Exception:
@@ -47,10 +52,17 @@ class Game(Widget):
 
 
 class PongApp(App):
+    """
+    Class for application.
+    """
 
-    icon = os.path.join(os.getcwd(), "media", "icon.png")
+    icon = os.path.join("media", "icon.png")
 
     def build(self) -> Game:
+        """
+        :return: main widget of application.
+        """
+
         self.game = Game()
         return self.game
 
