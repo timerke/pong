@@ -6,6 +6,9 @@ from pong.menu import GameType, Menu
 
 
 class Game(Widget):
+    """
+    Class with main widget of application.
+    """
 
     def __init__(self) -> None:
         super().__init__()

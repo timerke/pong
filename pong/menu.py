@@ -25,8 +25,7 @@ class Menu(FloatLayout):
     BACKGROUND_COLOR: Tuple[float, float, float, float] = (208 / 255, 189 / 255, 244 / 255, 1)
     BUTTON_COLOR: Tuple[float, float, float, float] = (132 / 255, 88 / 255, 179 / 255, 1)
     BUTTON_COLOR_ON_HOVER: Tuple[float, float, float, float] = (160 / 255, 210 / 255, 235 / 255, 1)
-    FONT_SIZE: int = 35
-    SIZE_HINT: Tuple[float, float] = (0.7, 0.16)
+    BUTTON_SIZE_HINT: Tuple[float, float] = (0.7, 0.16)
     game_type = Property(GameType.NOTHING)
 
     def __init__(self) -> None:
@@ -40,15 +39,14 @@ class Menu(FloatLayout):
         self._buttons: List[Button] = [self._button_play_with_friend, self._button_play_with_simple_ai,
                                        self._button_play_with_ai, self._button_exit]
         for widget in self._buttons:
-            widget.font_size = Menu.FONT_SIZE
             widget.background_color = Menu.BUTTON_COLOR
-            widget.size_hint = Menu.SIZE_HINT
+            widget.size_hint = Menu.BUTTON_SIZE_HINT
         self._button_exit.bind(on_press=self.stop_app)
         self._button_play_with_ai.bind(on_press=self.start_ai_game)
         self._button_play_with_friend.bind(on_press=self.start_game_with_friend)
         self._button_play_with_simple_ai.bind(on_press=self.start_simple_ai_game)
 
-        self._label_version: Label = Label(text=VERSION, pos_hint={"center_x": 0.5, "center_y": 0.05})
+        self._label_version: Label = Label(text=f"v{VERSION}", pos_hint={"center_x": 0.5, "center_y": 0.05})
         self._widgets: List = [*self._buttons, self._label_version]
         self.resize()
         Window.bind(mouse_pos=self._handle_mouse_hover)
@@ -65,6 +63,18 @@ class Menu(FloatLayout):
                 widget.background_color = Menu.BUTTON_COLOR_ON_HOVER
             else:
                 widget.background_color = Menu.BUTTON_COLOR
+
+    def _set_font_sizes(self, app_height: int) -> None:
+        """
+        :param app_height: height of application window.
+        """
+
+        for button in self._buttons:
+            button.font_size = app_height * Menu.BUTTON_SIZE_HINT[1] * 0.6
+        self._label_version.font_size = app_height * 0.05
+
+    def on_size(self, *args) -> None:
+        self._set_font_sizes(self.size[1])
 
     def resize(self) -> None:
         self.canvas.clear()
