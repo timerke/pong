@@ -5,6 +5,7 @@ from typing import Tuple
 import numpy as np
 from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
+from kivy.core.window import Window
 from kivy.graphics import Color, Rectangle
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
@@ -24,6 +25,8 @@ class PongGame(Widget):
     FONT_SIZE: int = 70
     ENEMY_COLOR: Tuple[float, float, float, float] = (160 / 255, 210 / 255, 235 / 255, 1)
     MAX_SCORE: int = 5
+    STOP_COLOR: Tuple[float, float, float, float] = (1, 0, 0, 1)
+    STOP_HOVER_COLOR: Tuple[float, float, float, float] = (121 / 255, 6 / 255, 4 / 255, 1)
     TIMEOUT: float = 1 / 60
     USER_COLOR: Tuple[float, float, float, float] = (229 / 255, 234 / 255, 245 / 255, 1)
 
@@ -41,9 +44,11 @@ class PongGame(Widget):
         self._player_1: Player = None
         self._player_2: Player = None
         self._label_1: Label = Label()
-        self._label_1.font_size = PongGame.FONT_SIZE
         self._label_2: Label = Label()
-        self._label_2.font_size = PongGame.FONT_SIZE
+        self._label_stop: Label = Label(text="Stop", color=PongGame.STOP_COLOR)
+        self._label_stop.bind(on_touch_down=self.stop_game_by_user)
+        for label in (self._label_1, self._label_2, self._label_stop):
+            label.font_size = PongGame.FONT_SIZE
         self._headband: Headband = Headband()
         self._headband.bind(return_to_menu=self.stop_game)
         self._headband.bind(start_round=self.start_round)
@@ -113,15 +118,29 @@ class PongGame(Widget):
         self._label_1.top = self.top - 50
         self._label_2.center_x = 3 * self.width / 4
         self._label_2.top = self.top - 50
+        self._label_stop.center_x = self.width / 2
+        self._label_stop.top = 90
 
         self._headband.center_x = self.center_x
         self._headband.center_y = self.center_y
 
-        for widget in (self._ball, self._player_1, self._player_2, self._label_1, self._label_2, self._headband):
+        for widget in (self._ball, self._player_1, self._player_2, self._label_1, self._label_2, self._label_stop,
+                       self._headband):
             if widget.parent is None:
                 self.add_widget(widget)
 
+        Window.bind(mouse_pos=self._handle_mouse_hover)
         self._headband.start_countdown()
+
+    def _handle_mouse_hover(self, window, pos) -> None:
+        """
+        Method handles mouse movement over screen.
+        :param window: window;
+        :param pos: mouse position.
+        """
+
+        self._label_stop.color = PongGame.STOP_HOVER_COLOR if self._label_stop.collide_point(*pos) else \
+            PongGame.STOP_COLOR
 
     def _show_game_end(self) -> None:
         if self._schedule_event:
@@ -164,6 +183,14 @@ class PongGame(Widget):
 
     def stop_game(self, headband, return_to_menu) -> None:
         if return_to_menu:
+            self._main_widget.show_menu()
+
+    def stop_game_by_user(self, obj, touch) -> None:
+        if touch.device == "mouse" and touch.button != "left":
+            return
+        if self._label_stop.collide_point(touch.x, touch.y):
+            if self._schedule_event:
+                self._schedule_event.cancel()
             self._main_widget.show_menu()
 
     def update(self, dt) -> None:

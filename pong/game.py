@@ -25,6 +25,7 @@ class Game(Widget):
                 resize_func()
 
     def show_menu(self) -> None:
+        self._menu.game_type = GameType.NOTHING
         try:
             self.add_widget(self._menu)
         except Exception:
@@ -40,6 +41,8 @@ class Game(Widget):
         :param game_type: type of game to start.
         """
 
+        if game_type == GameType.NOTHING:
+            return
         try:
             self.add_widget(self._pong_game)
         except Exception:

@@ -17,7 +17,7 @@ class Side(Enum):
 class Player(Widget):
 
     HIT_COLOR: Tuple[float, float, float, float] = (247 / 255, 89 / 255, 144 / 255, 1)
-    INCREMENT_COEFFICIENT: float = 1.01
+    INCREMENT_COEFFICIENT: float = 1.08
     score: NumericProperty = NumericProperty(-1)
 
     def __init__(self, rgb_color: Tuple[float, float, float, float], side: Side) -> None:
@@ -93,8 +93,8 @@ class Player(Widget):
         if self.collide_widget(ball):
             if self._sound:
                 self._sound.play()
-            new_velocity = self.INCREMENT_COEFFICIENT * ball.velocity_module
-            coefficient = self.INCREMENT_COEFFICIENT if ball.check_velocity_increasing(new_velocity) else 1
+            new_velocity = Player.INCREMENT_COEFFICIENT * ball.velocity_module
+            coefficient = Player.INCREMENT_COEFFICIENT if ball.check_velocity_increasing(new_velocity) else 1
             velocity_x, velocity_y = ball.velocity
             ball.velocity = coefficient * Vector(-1 * velocity_x, velocity_y)
             if self._side == Side.LEFT:
