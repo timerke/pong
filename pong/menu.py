@@ -51,6 +51,10 @@ class Menu(FloatLayout):
         self.resize()
         Window.bind(mouse_pos=self._handle_mouse_hover)
 
+    @staticmethod
+    def _check_press(instance) -> bool:
+        return instance.last_touch.device == "mouse" and instance.last_touch.button != "left"
+
     def _handle_mouse_hover(self, window, pos) -> None:
         """
         Method handles mouse movement over menu buttons.
@@ -89,14 +93,21 @@ class Menu(FloatLayout):
             self.add_widget(widget)
 
     def start_ai_game(self, instance) -> None:
+        if self._check_press(instance):
+            return
         self.game_type = GameType.AI
 
     def start_game_with_friend(self, instance) -> None:
+        if self._check_press(instance):
+            return
         self.game_type = GameType.WITH_FRIEND
 
     def start_simple_ai_game(self, instance) -> None:
+        if self._check_press(instance):
+            return
         self.game_type = GameType.SIMPLE_AI
 
-    @staticmethod
-    def stop_app(instance) -> None:
+    def stop_app(self, instance) -> None:
+        if self._check_press(instance):
+            return
         App.get_running_app().stop()

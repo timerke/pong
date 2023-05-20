@@ -1,4 +1,5 @@
 import math
+import logging
 import os
 from random import randint
 from typing import Tuple
@@ -36,28 +37,29 @@ class PongGame(Widget):
         """
 
         super().__init__()
-        self._main_widget = main_widget
         self._ball: Ball = Ball()
-        self._path_to_sound: str = os.path.join("media", "impact_on_ground.wav")
-        self._sound: SoundLoader = SoundLoader.load(self._path_to_sound)
-        self._schedule_event = None
-        self._player_1: Player = None
-        self._player_2: Player = None
+        self._headband: Headband = Headband()
+        self._headband.bind(return_to_menu=self.stop_game)
+        self._headband.bind(start_round=self.start_round)
+        self._is_running: bool = False
         self._label_1: Label = Label()
         self._label_2: Label = Label()
         self._label_stop: Label = Label(text="Stop", color=PongGame.STOP_COLOR)
         self._label_stop.bind(on_touch_down=self.stop_game_by_user)
+        self._main_widget = main_widget
+        self._player_1: Player = None
+        self._player_2: Player = None
+        self._schedule_event = None
+        self._sound: SoundLoader = SoundLoader.load(os.path.join("media", "impact_on_ground.wav"))
+
         for label in (self._label_1, self._label_2, self._label_stop):
             label.font_size = PongGame.FONT_SIZE
-        self._headband: Headband = Headband()
-        self._headband.bind(return_to_menu=self.stop_game)
-        self._headband.bind(start_round=self.start_round)
-
         with self.canvas:
             Color(*PongGame.BACKGROUND_COLOR)
             self._background: Rectangle = Rectangle(pos=self.pos, size=self.size)
             Color(1, 1, 1, 1)
             self._net: Rectangle = Rectangle(pos=[self.center_x - 5, 0], size=[10, self.height])
+        Window.bind(mouse_pos=self._handle_mouse_hover)
 
     def _continue_game(self) -> bool:
         """
@@ -79,6 +81,7 @@ class PongGame(Widget):
         width, height = self.size
         self._ball.max_velocity = math.pow(width ** 2 + height ** 2, 0.5) * PongGame.TIMEOUT
         self._ball.init_velocity = self._ball.max_velocity / 5
+        logging.info("Initial velocity of ball: %.2f", self._ball.init_velocity)
 
     def _init_players(self, game_type: GameType) -> None:
         """
@@ -99,6 +102,7 @@ class PongGame(Widget):
         self._player_2.bind(score=self.set_score)
 
     def _init_round(self) -> None:
+        logging.info("Start new round")
         if self._schedule_event:
             self._schedule_event.cancel()
         self._ball.center = self.center
@@ -129,7 +133,6 @@ class PongGame(Widget):
             if widget.parent is None:
                 self.add_widget(widget)
 
-        Window.bind(mouse_pos=self._handle_mouse_hover)
         self._headband.start_countdown()
 
     def _handle_mouse_hover(self, window, pos) -> None:
@@ -169,31 +172,40 @@ class PongGame(Widget):
         :param game_type: type of game to start.
         """
 
+        logging.info("Start new game")
+        self._is_running = True
         self._init_ball()
         self._init_players(game_type)
         self._player_1.score = 0
         self._player_2.score = 0
-
         self._init_round()
 
-    def start_round(self, headband, start_round) -> None:
-        if start_round:
+    def start_round(self, headband, start_round: bool) -> None:
+        if start_round and self._is_running:
             self._schedule_event = Clock.schedule_interval(self.update, PongGame.TIMEOUT)
             self.remove_widget(self._headband)
 
-    def stop_game(self, headband, return_to_menu) -> None:
+    def stop_game(self, headband, return_to_menu: bool) -> None:
+        logging.info("Return to menu")
         if return_to_menu:
+            self._is_running = False
             self._main_widget.show_menu()
 
     def stop_game_by_user(self, obj, touch) -> None:
         if touch.device == "mouse" and touch.button != "left":
             return
         if self._label_stop.collide_point(touch.x, touch.y):
+            logging.info("Game stopped by user")
+            self._is_running = False
             if self._schedule_event:
                 self._schedule_event.cancel()
+                self._schedule_event = None
             self._main_widget.show_menu()
 
-    def update(self, dt) -> None:
+    def update(self, dt: float) -> None:
+        if not self._is_running:
+            return
+
         for player in (self._player_1, self._player_2):
             player.change_position(self._ball)
 
