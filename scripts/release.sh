@@ -18,3 +18,4 @@ mv dist release
 rm -rf build
 rm -rf dist
 rm -rf venv
+rm -rf pong.spec
