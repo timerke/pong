@@ -1,3 +1,4 @@
+import logging
 import os
 from enum import auto, Enum
 from typing import Tuple
@@ -114,40 +115,6 @@ class Player(Widget):
         self._rect.pos = pos
 
 
-class SimpleAIPlayer(Player):
-
-    VELOCITY: float = 4
-
-    def __init__(self, rgb_color: Tuple[float, float, float, float], side: Side) -> None:
-        """
-        :param rgb_color: color for player;
-        :param side: side for player.
-        """
-
-        super().__init__(rgb_color, side)
-        self._player_velocity: float = SimpleAIPlayer.VELOCITY
-
-    def change_position(self, ball: Ball) -> None:
-        """
-        Method changes position of player widget according to ball characteristics.
-        :param ball: ball.
-        """
-
-        new_y = self.center_y + self._player_velocity
-        if new_y <= self.height / 2 or new_y >= self.parent.height - self.height / 2:
-            self._player_velocity *= -1
-        self._change_position(new_y)
-
-    def change_position_by_touch(self, touch_x: float, touch_y: float) -> None:
-        """
-        Method changes position of player widget by coordinated of touch.
-        :param touch_x: horizontal coordinate;
-        :param touch_y: vertical coordinate.
-        """
-
-        pass
-
-
 class AIPlayer(Player):
 
     MAX_VELOCITY: float = 15
@@ -161,7 +128,38 @@ class AIPlayer(Player):
         """
 
         super().__init__(rgb_color, side)
+        self._error: float = 0
         self._player_velocity: float = AIPlayer.VELOCITY
+
+    def _calculate_ball_target_position(self, ball: Ball) -> Tuple[float, float]:
+        """
+        :param ball: ball.
+        :return: vertical position of ball and time.
+        """
+
+        time = 0
+        ball_center_x = (1 + self._error) * ball.center_x
+        ball_center_y = (1 + self._error) * ball.center_y
+        ball_velocity_x = (1 + self._error) * ball.velocity_x
+        ball_velocity_y = (1 + self._error) * ball.velocity_y
+        if ball.velocity_x < 0:
+            time += 2 * (ball_center_x - self.width) / abs(ball_velocity_x)
+        time += (self.parent.width - ball_center_x - self.width) / abs(ball_velocity_x)
+        y_target = abs(ball_velocity_y * time)
+        if ball_velocity_y < 0:
+            y_target += self.parent.height - ball_center_y
+        else:
+            y_target += ball_center_y
+        return y_target, time
+
+    def change_player_error(self, opponent_score: int, max_score: int) -> None:
+        """
+        :param opponent_score: opponent's score;
+        :param max_score: maximum score.
+        """
+
+        self._error = (max_score - opponent_score - 1) / (3 * max_score)
+        logging.info("AI player has error = %.2f", self._error)
 
     def change_position(self, ball: Ball) -> None:
         """
@@ -169,15 +167,7 @@ class AIPlayer(Player):
         :param ball: ball.
         """
 
-        time = 0
-        if ball.velocity_x < 0:
-            time += 2 * (ball.center_x - self.width) / abs(ball.velocity_x)
-        time += (self.parent.width - ball.center_x - self.width) / abs(ball.velocity_x)
-        y_target = abs(ball.velocity_y * time)
-        if ball.velocity_y < 0:
-            y_target += self.parent.height - ball.center_y
-        else:
-            y_target += ball.center_y
+        y_target, time = self._calculate_ball_target_position(ball)
         y_shift = int(abs(y_target)) % self.parent.height
         n_collisions = int(abs(y_target)) // self.parent.height
         if (n_collisions % 2 and ball.velocity_y > 0) or (n_collisions % 2 == 0 and ball.velocity_y < 0):

@@ -14,7 +14,7 @@ from kivy.vector import Vector
 from pong.ball import Ball
 from pong.headband import Headband
 from pong.menu import GameType
-from pong.player import AIPlayer, Player, Side, SimpleAIPlayer
+from pong.player import AIPlayer, Player, Side
 
 
 class PongGame(Widget):
@@ -74,7 +74,10 @@ class PongGame(Widget):
         """
 
         direction = 0 if randint(0, 1) == 0 else 180
-        angle = np.random.normal(direction, 180 / 5, 1)[0]
+        while True:
+            angle = np.random.normal(direction, 180 / 5, 1)[0]
+            if angle != 0:
+                break
         return Vector(self._ball.init_velocity, 0).rotate(angle)
 
     def _init_ball(self) -> None:
@@ -95,8 +98,6 @@ class PongGame(Widget):
         self._player_1.bind(score=self.set_score)
         if game_type == GameType.AI:
             self._player_2 = AIPlayer(PongGame.ENEMY_COLOR, Side.RIGHT)
-        elif game_type == GameType.SIMPLE_AI:
-            self._player_2 = SimpleAIPlayer(PongGame.ENEMY_COLOR, Side.RIGHT)
         elif game_type == GameType.WITH_FRIEND:
             self._player_2 = Player(PongGame.ENEMY_COLOR, Side.RIGHT)
         self._player_2.bind(score=self.set_score)
@@ -112,6 +113,8 @@ class PongGame(Widget):
         self._player_1.center_y = self.center_y
         self._player_2.x = self.width - self._player_2.width
         self._player_2.center_y = self.center_y
+        if isinstance(self._player_2, AIPlayer):
+            self._player_2.change_player_error(self._player_1.score, PongGame.MAX_SCORE)
 
         self._background.pos = self.pos
         self._background.size = self.size
