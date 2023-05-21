@@ -1,9 +1,8 @@
 import math
 import logging
 import os
-from random import randint
+import random
 from typing import Tuple
-import numpy as np
 from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
 from kivy.core.window import Window
@@ -73,15 +72,9 @@ class PongGame(Widget):
         :return: velocity vector with a randomly chosen direction. The direction of velocity is normally distributed.
         """
 
-        while True:
-            angle = np.random.normal(0, 180 / 5, 1)[0] % 180
-            angle = angle - 180 if angle > 90 else angle
-            if -10 < angle < 10 or 80 < angle or angle < -80:
-                continue
-            else:
-                direction = 0 if randint(0, 1) == 0 else 180
-                angle += direction
-                break
+        angle = random.choice([*list(range(10, 81)), *list(range(-80, -9))])
+        direction = 0 if random.randint(0, 1) == 0 else 180
+        angle += direction
         return Vector(self._ball.init_velocity, 0).rotate(angle)
 
     def _init_ball(self) -> None:
