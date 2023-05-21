@@ -55,6 +55,12 @@
    buildozer -v android release
    ```
 
+3. Чтобы создать apk-файл, выполните команду:
+
+   ```bash
+   buildozer -v android debug
+   ```
+
 ## Возможные ошибки
 
 1. На *Ubuntu 20* может не работать звук. Тогда нужно:
