@@ -17,6 +17,7 @@ def check_platform() -> None:
         Config.set("graphics", "width", "1000")
         Config.set("graphics", "height", "800")
         Config.set("input", "mouse", "mouse,multitouch_on_demand")
+        Config.set("postproc", "maxfps", "0")
         Config.write()
 
 
