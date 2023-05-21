@@ -14,10 +14,10 @@ if "_PYIBoot_SPLASH" in os.environ and importlib.util.find_spec("pyi_splash"):
 def check_platform() -> None:
     if platform.lower() in ("linux", "macosx", "win"):
         Config.set("graphics", "resizable", False)
-        Config.set("graphics", "width", "1000")
         Config.set("graphics", "height", "800")
+        Config.set("graphics", "width", "1000")
+        Config.set("graphics", "maxfps", "60")
         Config.set("input", "mouse", "mouse,multitouch_on_demand")
-        Config.set("postproc", "maxfps", "0")
         Config.write()
 
 

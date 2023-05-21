@@ -30,21 +30,18 @@ class Menu(FloatLayout):
     def __init__(self) -> None:
         super().__init__()
         self._button_play_with_friend: Button = Button(text="Play with friend",
-                                                       pos_hint={"center_x": 0.5, "center_y": 0.81})
+                                                       pos_hint={"center_x": 0.5, "center_y": 0.75})
         self._button_play_with_friend.bind(on_press=self.start_game_with_friend)
-        self._button_play_with_ai: Button = Button(text="Play with AI", pos_hint={"center_x": 0.5, "center_y": 0.6})
+        self._button_play_with_ai: Button = Button(text="Play with AI", pos_hint={"center_x": 0.5, "center_y": 0.5})
         self._button_play_with_ai.bind(on_press=self.start_ai_game)
-        self._button_settings: Button = Button(text="Settings", pos_hint={"center_x": 0.5, "center_y": 0.39})
-        self._button_settings.bind(on_press=self.change_settings)
-        self._button_exit: Button = Button(text="Exit", pos_hint={"center_x": 0.5, "center_y": 0.18})
+        self._button_exit: Button = Button(text="Exit", pos_hint={"center_x": 0.5, "center_y": 0.25})
         self._button_exit.bind(on_press=self.stop_app)
-        self._buttons: List[Button] = [self._button_play_with_friend, self._button_play_with_ai, self._button_settings,
-                                       self._button_exit]
+        self._buttons: List[Button] = [self._button_play_with_friend, self._button_play_with_ai, self._button_exit]
         for widget in self._buttons:
             widget.background_color = Menu.BUTTON_COLOR
             widget.size_hint = Menu.BUTTON_SIZE_HINT
 
-        self._label_version: Label = Label(text=f"v{VERSION}", pos_hint={"center_x": 0.5, "center_y": 0.05})
+        self._label_version: Label = Label(text=f"v{VERSION}", pos_hint={"center_x": 0.5, "center_y": 0.075})
         self._widgets: List = [*self._buttons, self._label_version]
         self.resize()
         Window.bind(mouse_pos=self._handle_mouse_hover)
@@ -74,10 +71,6 @@ class Menu(FloatLayout):
         for button in self._buttons:
             button.font_size = app_height * Menu.BUTTON_SIZE_HINT[1] * 0.6
         self._label_version.font_size = app_height * 0.05
-
-    def change_settings(self, instance) -> None:
-        if self._check_press(instance):
-            return
 
     def on_size(self, *args) -> None:
         self._set_font_sizes(self.size[1])

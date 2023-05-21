@@ -73,17 +73,21 @@ class PongGame(Widget):
         :return: velocity vector with a randomly chosen direction. The direction of velocity is normally distributed.
         """
 
-        direction = 0 if randint(0, 1) == 0 else 180
         while True:
-            angle = np.random.normal(direction, 180 / 5, 1)[0]
-            if angle != 0:
+            angle = np.random.normal(0, 180 / 5, 1)[0] % 180
+            angle = angle - 180 if angle > 90 else angle
+            if -10 < angle < 10 or 80 < angle or angle < -80:
+                continue
+            else:
+                direction = 0 if randint(0, 1) == 0 else 180
+                angle += direction
                 break
         return Vector(self._ball.init_velocity, 0).rotate(angle)
 
     def _init_ball(self) -> None:
         width, height = self.size
-        self._ball.max_velocity = math.pow(width ** 2 + height ** 2, 0.5) * PongGame.TIMEOUT
-        self._ball.init_velocity = self._ball.max_velocity / 5
+        self._ball.max_velocity = math.pow(width ** 2 + height ** 2, 0.5) / 1
+        self._ball.init_velocity = self._ball.max_velocity / 4
         logging.info("Initial velocity of ball: %.2f", self._ball.init_velocity)
 
     def _init_players(self, game_type: GameType) -> None:
@@ -210,9 +214,9 @@ class PongGame(Widget):
             return
 
         for player in (self._player_1, self._player_2):
-            player.change_position(self._ball)
+            player.change_position(dt, self._ball)
 
-        self._ball.move()
+        self._ball.move(dt)
         self._player_1.hit_ball(self._ball)
         self._player_2.hit_ball(self._ball)
 

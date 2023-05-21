@@ -57,5 +57,9 @@ class Ball(Widget):
 
         return new_velocity < self.max_velocity
 
-    def move(self) -> None:
-        self.pos = Vector(*self.velocity) + self.pos
+    def move(self, dt: float) -> None:
+        """
+        :param dt: time elapsed since the previous moment.
+        """
+
+        self.pos = Vector(*self.velocity) * dt + self.pos

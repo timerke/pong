@@ -61,9 +61,10 @@ class Player(Widget):
             Color(*color)
             self._rect: Rectangle = Rectangle(pos=self.pos, size=self.size)
 
-    def change_position(self, ball: Ball) -> None:
+    def change_position(self, dt: float, ball: Ball) -> None:
         """
         Method changes position of player widget according to ball characteristics.
+        :param dt:
         :param ball: ball.
         """
 
@@ -117,7 +118,7 @@ class Player(Widget):
 
 class AIPlayer(Player):
 
-    MAX_VELOCITY: float = 15
+    MAX_VELOCITY: float = 500
     MIN_VELOCITY: float = 1
     VELOCITY: float = 4
 
@@ -161,9 +162,10 @@ class AIPlayer(Player):
         self._error = (max_score - opponent_score - 1) / (3 * max_score)
         logging.info("AI player has error = %.2f", self._error)
 
-    def change_position(self, ball: Ball) -> None:
+    def change_position(self, dt: float, ball: Ball) -> None:
         """
         Method changes position of player widget according to ball characteristics.
+        :param dt:
         :param ball: ball.
         """
 
@@ -182,10 +184,10 @@ class AIPlayer(Player):
             self._player_velocity = required_velocity
 
         if y_required > self.center_y + self.height / 2:
-            y_new = self.center_y + self._player_velocity
+            y_new = self.center_y + self._player_velocity * dt
             self._change_position(y_new)
         elif y_required < self.center_y - self.height / 2:
-            y_new = self.center_y - self._player_velocity
+            y_new = self.center_y - self._player_velocity * dt
             self._change_position(y_new)
 
     def change_position_by_touch(self, touch_x: float, touch_y: float) -> None:
