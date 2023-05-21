@@ -222,6 +222,10 @@ class PongGame(Widget):
 
         if self._ball.y < 0 or self._ball.top > self.height:
             # Ball rebound from the horizontal borders of the field
+            if self._ball.y < 0:
+                self._ball.y = 0
+            else:
+                self._ball.top = self.height
             self._sound.play()
             self._ball.velocity_y *= -1
 
