@@ -3,6 +3,7 @@ from kivy.app import App
 from kivy.uix.widget import Widget
 from pong.pong_game import PongGame
 from pong.menu import GameType, Menu
+from version import VERSION
 
 
 class Game(Widget):
@@ -60,6 +61,7 @@ class PongApp(App):
     """
 
     icon = os.path.join("media", "icon.png")
+    title = f"Pong v{VERSION}"
 
     def build(self) -> Game:
         """
