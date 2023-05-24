@@ -79,6 +79,10 @@
      venv/bin/python -m pip install --no-binary kivy kivy
      ```
 
+## Пример работы
+
+![1](doc/1.gif)
+
 ## Примечание
 
 Приложение проверялось на:
