@@ -1,4 +1,5 @@
 import logging
+import random
 import os
 from enum import auto, Enum
 from typing import Tuple
@@ -159,7 +160,8 @@ class AIPlayer(Player):
         :param max_score: maximum score.
         """
 
-        self._error = (max_score - opponent_score - 1) / (3 * max_score)
+        self._error = 0.1 if max_score != opponent_score + 1 else 0
+        self._error *= 0.0 * random.random()
         logging.info("AI player has error = %.2f", self._error)
 
     def change_position(self, dt: float, ball: Ball) -> None:
@@ -179,7 +181,6 @@ class AIPlayer(Player):
 
         if time != 0:
             required_velocity = abs(y_required - self.center_y) / time
-            required_velocity = min(required_velocity, AIPlayer.MAX_VELOCITY)
             required_velocity = max(required_velocity, AIPlayer.MIN_VELOCITY)
             self._player_velocity = required_velocity
 
