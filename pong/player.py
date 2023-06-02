@@ -20,6 +20,7 @@ class Player(Widget):
 
     HIT_COLOR: Tuple[float, float, float, float] = (247 / 255, 89 / 255, 144 / 255, 1)
     INCREMENT_COEFFICIENT: float = 1.08
+    KEYBOARD_SHIFT: int = 30
     score: NumericProperty = NumericProperty(-1)
 
     def __init__(self, rgb_color: Tuple[float, float, float, float], side: Side) -> None:
@@ -106,6 +107,12 @@ class Player(Widget):
                 ball.center_x = self.x - ball.width / 2
             self._draw(Player.HIT_COLOR)
             self._hit_was = 1
+
+    def move_player_down(self) -> None:
+        self._change_position(self.center_y - Player.KEYBOARD_SHIFT)
+
+    def move_player_up(self) -> None:
+        self._change_position(self.center_y + Player.KEYBOARD_SHIFT)
 
     def move_racket(self, obj, pos) -> None:
         """

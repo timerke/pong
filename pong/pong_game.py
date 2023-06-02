@@ -9,6 +9,7 @@ from kivy.core.window import Window
 from kivy.graphics import Color, Rectangle
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
+from kivy.utils import platform
 from kivy.vector import Vector
 from pong.ball import Ball
 from pong.headband import Headband
@@ -41,6 +42,7 @@ class PongGame(Widget):
         self._headband.bind(return_to_menu=self.stop_game)
         self._headband.bind(start_round=self.start_round)
         self._is_running: bool = False
+        self._keyboard = None
         self._label_1: Label = Label()
         self._label_2: Label = Label()
         self._label_stop: Label = Label(text="Stop", color=PongGame.STOP_COLOR)
@@ -59,6 +61,11 @@ class PongGame(Widget):
             Color(1, 1, 1, 1)
             self._net: Rectangle = Rectangle(pos=[self.center_x - 5, 0], size=[10, self.height])
         Window.bind(mouse_pos=self._handle_mouse_hover)
+
+    def _handle_keyboard_closed(self) -> None:
+        if self._keyboard:
+            self._keyboard.unbind(on_key_down=self.handle_keyboard_down)
+            self._keyboard = None
 
     def _continue_game(self) -> bool:
         """
@@ -98,6 +105,7 @@ class PongGame(Widget):
         elif game_type == GameType.WITH_FRIEND:
             self._player_2 = Player(PongGame.ENEMY_COLOR, Side.RIGHT)
         self._player_2.bind(score=self.set_score)
+        self._set_keyboard_for_computer()
 
     def _init_round(self) -> None:
         logging.info("Start new round")
@@ -145,12 +153,24 @@ class PongGame(Widget):
         self._label_stop.color = PongGame.STOP_HOVER_COLOR if self._label_stop.collide_point(*pos) else \
             PongGame.STOP_COLOR
 
+    def _set_keyboard_for_computer(self) -> None:
+        if platform.lower() in ("linux", "macosx", "win") and not self._keyboard:
+            self._keyboard = Window.request_keyboard(self._handle_keyboard_closed, self, "text")
+            self._keyboard.bind(on_key_down=self.handle_keyboard_down)
+
     def _show_game_end(self) -> None:
         if self._schedule_event:
             self._schedule_event.cancel()
         if self._headband.parent is None:
             self.add_widget(self._headband)
         self._headband.show_congratulations(self._player_1.score >= PongGame.MAX_SCORE)
+
+    def handle_keyboard_down(self, keyboard, key_code, text, modifiers) -> bool:
+        if key_code[1].lower() == "down":
+            self._player_1.move_player_down()
+        elif key_code[1].lower() == "up":
+            self._player_1.move_player_up()
+        return True
 
     def on_touch_move(self, touch) -> None:
         for player in (self._player_1, self._player_2):
@@ -187,6 +207,7 @@ class PongGame(Widget):
 
     def stop_game(self, headband, return_to_menu: bool) -> None:
         logging.info("Return to menu")
+        self._handle_keyboard_closed()
         if return_to_menu:
             self._is_running = False
             self._main_widget.show_menu()
@@ -196,6 +217,7 @@ class PongGame(Widget):
             return
         if self._label_stop.collide_point(touch.x, touch.y):
             logging.info("Game stopped by user")
+            self._handle_keyboard_closed()
             self._is_running = False
             if self._schedule_event:
                 self._schedule_event.cancel()

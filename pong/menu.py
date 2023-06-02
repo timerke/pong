@@ -69,7 +69,7 @@ class Menu(FloatLayout):
         """
 
         for button in self._buttons:
-            button.font_size = app_height * Menu.BUTTON_SIZE_HINT[1] * 0.45
+            button.font_size = app_height * Menu.BUTTON_SIZE_HINT[1] * 0.3
         self._label_version.font_size = app_height * 0.05
 
     def on_size(self, *args) -> None:
